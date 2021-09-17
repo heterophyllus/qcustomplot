@@ -1,0 +1,5 @@
+# QtCreator
+*.user
+*.pro.user
+*.stash
+/build*/
