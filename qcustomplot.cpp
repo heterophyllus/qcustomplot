@@ -667,7 +667,7 @@ QCPPaintBufferPixmap::~QCPPaintBufferPixmap()
 QCPPainter *QCPPaintBufferPixmap::startPainting()
 {
   QCPPainter *result = new QCPPainter(&mBuffer);
-  result->setRenderHint(QPainter::HighQualityAntialiasing);
+  result->setRenderHint(QPainter::Antialiasing);
   return result;
 }
 
@@ -6556,7 +6556,7 @@ QCPAxisTickerText::QCPAxisTickerText() :
   
   \see addTicks, addTick, clear
 */
-void QCPAxisTickerText::setTicks(const QMap<double, QString> &ticks)
+void QCPAxisTickerText::setTicks(const QMultiMap<double, QString> &ticks)
 {
   mTicks = ticks;
 }
@@ -6622,7 +6622,7 @@ void QCPAxisTickerText::addTick(double position, const QString &label)
   
   \see addTick, setTicks, clear
 */
-void QCPAxisTickerText::addTicks(const QMap<double, QString> &ticks)
+void QCPAxisTickerText::addTicks(const QMultiMap<double, QString> &ticks)
 {
   mTicks.unite(ticks);
 }
@@ -6698,12 +6698,12 @@ QVector<double> QCPAxisTickerText::createTickVector(double tickStep, const QCPRa
   if (mTicks.isEmpty())
     return result;
   
-  QMap<double, QString>::const_iterator start = mTicks.lowerBound(range.lower);
-  QMap<double, QString>::const_iterator end = mTicks.upperBound(range.upper);
+  QMultiMap<double, QString>::const_iterator start = mTicks.lowerBound(range.lower);
+  QMultiMap<double, QString>::const_iterator end = mTicks.upperBound(range.upper);
   // this method should try to give one tick outside of range so proper subticks can be generated:
   if (start != mTicks.constBegin()) --start;
   if (end != mTicks.constEnd()) ++end;
-  for (QMap<double, QString>::const_iterator it = start; it != end; ++it)
+  for (QMultiMap<double, QString>::const_iterator it = start; it != end; ++it)
     result.append(it.key());
   
   return result;
@@ -14749,7 +14749,7 @@ void QCustomPlot::paintEvent(QPaintEvent *event)
   QCPPainter painter(this);
   if (painter.isActive())
   {
-    painter.setRenderHint(QPainter::HighQualityAntialiasing); // to make Antialiasing look good if using the OpenGL graphicssystem
+    painter.setRenderHint(QPainter::Antialiasing); // to make Antialiasing look good if using the OpenGL graphicssystem
     if (mBackgroundBrush.style() != Qt::NoBrush)
       painter.fillRect(mViewport, mBackgroundBrush);
     drawBackground(&painter);
@@ -15323,8 +15323,9 @@ void QCustomPlot::processRectSelection(QRect rect, QMouseEvent *event)
         // only leave plottable with most selected points in map, since we will only select a single plottable:
         if (!potentialSelections.isEmpty())
         {
-          QMap<int, QPair<QCPAbstractPlottable*, QCPDataSelection> >::iterator it = potentialSelections.begin();
-          while (it != potentialSelections.end()-1) // erase all except last element
+          QMultiMap<int, QPair<QCPAbstractPlottable*, QCPDataSelection> >::iterator it = potentialSelections.begin();
+          QMultiMap<int, QPair<QCPAbstractPlottable*, QCPDataSelection> >::iterator it_before_last = potentialSelections.end(); it_before_last--;
+          while (it != it_before_last) // erase all except last element
             it = potentialSelections.erase(it);
         }
       }
@@ -15349,7 +15350,7 @@ void QCustomPlot::processRectSelection(QRect rect, QMouseEvent *event)
       }
       
       // go through selections in reverse (largest selection first) and emit select events:
-      QMap<int, QPair<QCPAbstractPlottable*, QCPDataSelection> >::const_iterator it = potentialSelections.constEnd();
+      QMultiMap<int, QPair<QCPAbstractPlottable*, QCPDataSelection> >::const_iterator it = potentialSelections.constEnd();
       while (it != potentialSelections.constBegin())
       {
         --it;
@@ -16310,13 +16311,14 @@ void QCPColorGradient::updateColorBuffer()
       QMap<double, QColor>::const_iterator it = mColorStops.lowerBound(position);
       if (it == mColorStops.constEnd()) // position is on or after last stop, use color of last stop
       {
+          auto it_end_1 = it--;
         if (useAlpha)
         {
-          const QColor col = (it-1).value();
+          const QColor col = it_end_1.value();
           const float alphaPremultiplier = col.alpha()/255.0f; // since we use QImage::Format_ARGB32_Premultiplied
           mColorBuffer[i] = qRgba(col.red()*alphaPremultiplier, col.green()*alphaPremultiplier, col.blue()*alphaPremultiplier, col.alpha());
         } else
-          mColorBuffer[i] = (it-1).value().rgba();
+          mColorBuffer[i] = it_end_1.value().rgba();
       } else if (it == mColorStops.constBegin()) // position is on or before first stop, use color of first stop
       {
         if (useAlpha)
@@ -16329,7 +16331,7 @@ void QCPColorGradient::updateColorBuffer()
       } else // position is in between stops (or on an intermediate stop), interpolate color
       {
         QMap<double, QColor>::const_iterator high = it;
-        QMap<double, QColor>::const_iterator low = it-1;
+        QMap<double, QColor>::const_iterator low = it; it--; // low = it-1
         double t = (position-low.key())/(high.key()-low.key()); // interpolation factor 0..1
         switch (mColorInterpolation)
         {
