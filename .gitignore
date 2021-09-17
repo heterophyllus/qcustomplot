@@ -3,3 +3,4 @@
 *.pro.user
 *.stash
 /build*/
+/qcustomplot-sharedlib/build*/
