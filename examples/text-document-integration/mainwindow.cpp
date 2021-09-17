@@ -122,7 +122,7 @@ void MainWindow::on_actionSave_Document_triggered()
     pageLayout.setMargins(QMarginsF(pageMargins));
     printer.setPageLayout(pageLayout);
 #endif
-    ui->textEdit->document()->setPageSize(printer.pageRect().size());
+    ui->textEdit->document()->setPageSize(printer.pageLayout().paintRectPixels(printer.resolution()).size());
     ui->textEdit->document()->print(&printer);
   }
 }

@@ -42,7 +42,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QDebug>
-#include <QDesktopWidget>
+//#include <QDesktopWidget>
 #include <QScreen>
 #include <QMessageBox>
 #include <QMetaEnum>
@@ -408,7 +408,7 @@ void MainWindow::setupDateDemo(QCustomPlot *customPlot)
   // set locale to english, so we get english month names:
   customPlot->setLocale(QLocale(QLocale::English, QLocale::UnitedKingdom));
   // seconds of current time, we'll use it as starting point in time for data:
-  double now = QDateTime::currentDateTime().toTime_t();
+  double now = QDateTime::currentDateTime().toSecsSinceEpoch();
   srand(8); // set the random seed, so we always get the same random data
   // create multiple graphs:
   for (int gi=0; gi<5; ++gi)
@@ -1054,8 +1054,9 @@ void MainWindow::setupStyledDemo(QCustomPlot *customPlot)
   }
   for (int i=0; i<x3.size(); ++i)
   {
+    int tmp_qrand = QRandomGenerator::global()->generate();
     x3[i] = i/(double)(x3.size()-1)*10;
-    y3[i] = 0.05+3*(0.5+qCos(x3[i]*x3[i]*0.2+2)*0.5)/(double)(x3[i]+0.7)+qrand()/(double)RAND_MAX*0.01;
+    y3[i] = 0.05+3*(0.5+qCos(x3[i]*x3[i]*0.2+2)*0.5)/(double)(x3[i]+0.7)+tmp_qrand/(double)RAND_MAX*0.01;
   }
   for (int i=0; i<x4.size(); ++i)
   {
@@ -1177,7 +1178,7 @@ void MainWindow::setupAdvancedAxesDemo(QCustomPlot *customPlot)
   // prepare data:
   QVector<QCPGraphData> dataCos(21), dataGauss(50), dataRandom(100);
   QVector<double> x3, y3;
-  qsrand(3);
+  QRandomGenerator::global()->seed(3);
   for (int i=0; i<dataCos.size(); ++i)
   {
     dataCos[i].key = i/(double)(dataCos.size()-1)*10-5.0;
@@ -1190,8 +1191,9 @@ void MainWindow::setupAdvancedAxesDemo(QCustomPlot *customPlot)
   }
   for (int i=0; i<dataRandom.size(); ++i)
   {
+    int tmp_qrand = QRandomGenerator::global()->generate();
     dataRandom[i].key = i/(double)dataRandom.size()*10;
-    dataRandom[i].value = qrand()/(double)RAND_MAX-0.5+dataRandom[qMax(0, i-1)].value;
+    dataRandom[i].value = tmp_qrand/(double)RAND_MAX-0.5+dataRandom[qMax(0, i-1)].value;
   }
   x3 << 1 << 2 << 3 << 4;
   y3 << 2 << 2.5 << 4 << 1.5;
@@ -1295,19 +1297,20 @@ void MainWindow::setupFinancialDemo(QCustomPlot *customPlot)
   // generate two sets of random walk data (one for candlestick and one for ohlc chart):
   int n = 500;
   QVector<double> time(n), value1(n), value2(n);
-  QDateTime start = QDateTime(QDate(2014, 6, 11));
+  QDateTime start = QDateTime(QDate(2014, 6, 11).startOfDay());
   start.setTimeSpec(Qt::UTC);
-  double startTime = start.toTime_t();
+  double startTime = start.toMSecsSinceEpoch();
   double binSize = 3600*24; // bin data in 1 day intervals
   time[0] = startTime;
   value1[0] = 60;
   value2[0] = 20;
-  qsrand(9);
+  QRandomGenerator::global()->seed(3);
   for (int i=1; i<n; ++i)
   {
+    double tmp_qrand = QRandomGenerator::global()->generate();
     time[i] = startTime + 3600*i;
-    value1[i] = value1[i-1] + (qrand()/(double)RAND_MAX-0.5)*10;
-    value2[i] = value2[i-1] + (qrand()/(double)RAND_MAX-0.5)*3;
+    value1[i] = value1[i-1] + (tmp_qrand/(double)RAND_MAX-0.5)*10;
+    value2[i] = value2[i-1] + (tmp_qrand/(double)RAND_MAX-0.5)*3;
   }
   
   // create candlestick chart:
@@ -1346,7 +1349,8 @@ void MainWindow::setupFinancialDemo(QCustomPlot *customPlot)
   QCPBars *volumeNeg = new QCPBars(volumeAxisRect->axis(QCPAxis::atBottom), volumeAxisRect->axis(QCPAxis::atLeft));
   for (int i=0; i<n/5; ++i)
   {
-    int v = qrand()%20000+qrand()%20000+qrand()%20000-10000*3;
+    int tmp_qrand = QRandomGenerator::global()->generate();
+    int v = tmp_qrand%20000+tmp_qrand%20000+tmp_qrand%20000-10000*3;
     (v < 0 ? volumeNeg : volumePos)->addData(startTime+3600*5.0*i, qAbs(v)); // add data to either volumeNeg or volumePos, depending on sign of v
   }
   volumePos->setWidth(3600*4);
@@ -1381,15 +1385,17 @@ void MainWindow::setupFinancialDemo(QCustomPlot *customPlot)
 
 void MainWindow::realtimeDataSlot()
 {
-  static QTime time(QTime::currentTime());
+  static QElapsedTimer time;
+  time.start();
   // calculate two new data points:
   double key = time.elapsed()/1000.0; // time elapsed since start of demo, in seconds
   static double lastPointKey = 0;
   if (key-lastPointKey > 0.002) // at most add point every 2 ms
   {
     // add data to lines:
-    ui->customPlot->graph(0)->addData(key, qSin(key)+qrand()/(double)RAND_MAX*1*qSin(key/0.3843));
-    ui->customPlot->graph(1)->addData(key, qCos(key)+qrand()/(double)RAND_MAX*0.5*qSin(key/0.4364));
+    double tmp_qrand = QRandomGenerator::global()->generate();
+    ui->customPlot->graph(0)->addData(key, qSin(key)+tmp_qrand/(double)RAND_MAX*1*qSin(key/0.3843));
+    ui->customPlot->graph(1)->addData(key, qCos(key)+tmp_qrand/(double)RAND_MAX*0.5*qSin(key/0.4364));
     // rescale value (vertical) axis to fit the current data:
     //ui->customPlot->graph(0)->rescaleValueAxis();
     //ui->customPlot->graph(1)->rescaleValueAxis(true);
@@ -1469,7 +1475,7 @@ void MainWindow::screenShot()
 #elif QT_VERSION < QT_VERSION_CHECK(5, 5, 0)
   QPixmap pm = qApp->primaryScreen()->grabWindow(qApp->desktop()->winId(), this->x()+2, this->y()+2, this->frameGeometry().width()-4, this->frameGeometry().height()-4);
 #else
-  QPixmap pm = qApp->primaryScreen()->grabWindow(qApp->desktop()->winId(), this->x()-7, this->y()-7, this->frameGeometry().width()+14, this->frameGeometry().height()+14);
+  QPixmap pm = qApp->primaryScreen()->grabWindow(this->winId(), this->x()-7, this->y()-7, this->frameGeometry().width()+14, this->frameGeometry().height()+14);
 #endif
   QString fileName = demoName.toLower()+".png";
   fileName.replace(" ", "");
@@ -1484,7 +1490,7 @@ void MainWindow::allScreenShots()
 #elif QT_VERSION < QT_VERSION_CHECK(5, 5, 0)
   QPixmap pm = qApp->primaryScreen()->grabWindow(qApp->desktop()->winId(), this->x()+2, this->y()+2, this->frameGeometry().width()-4, this->frameGeometry().height()-4);
 #else
-  QPixmap pm = qApp->primaryScreen()->grabWindow(qApp->desktop()->winId(), this->x()-7, this->y()-7, this->frameGeometry().width()+14, this->frameGeometry().height()+14);
+  QPixmap pm = qApp->primaryScreen()->grabWindow(this->winId(), this->x()-7, this->y()-7, this->frameGeometry().width()+14, this->frameGeometry().height()+14);
 #endif
   QString fileName = demoName.toLower()+".png";
   fileName.replace(" ", "");

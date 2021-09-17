@@ -5,7 +5,7 @@ MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
   ui(new Ui::MainWindow)
 {
-  srand(QDateTime::currentDateTime().toTime_t());
+  srand(QDateTime::currentDateTime().toMSecsSinceEpoch());
   ui->setupUi(this);
   
   ui->customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
@@ -181,14 +181,14 @@ void MainWindow::mouseWheel()
 void MainWindow::addRandomGraph()
 {
   int n = 50; // number of points in graph
-  double xScale = (rand()/(double)RAND_MAX + 0.5)*2;
-  double yScale = (rand()/(double)RAND_MAX + 0.5)*2;
-  double xOffset = (rand()/(double)RAND_MAX - 0.5)*4;
-  double yOffset = (rand()/(double)RAND_MAX - 0.5)*10;
-  double r1 = (rand()/(double)RAND_MAX - 0.5)*2;
-  double r2 = (rand()/(double)RAND_MAX - 0.5)*2;
-  double r3 = (rand()/(double)RAND_MAX - 0.5)*2;
-  double r4 = (rand()/(double)RAND_MAX - 0.5)*2;
+  double xScale = (arc4random()/(double)RAND_MAX + 0.5)*2;
+  double yScale = (arc4random()/(double)RAND_MAX + 0.5)*2;
+  double xOffset = (arc4random()/(double)RAND_MAX - 0.5)*4;
+  double yOffset = (arc4random()/(double)RAND_MAX - 0.5)*10;
+  double r1 = (arc4random()/(double)RAND_MAX - 0.5)*2;
+  double r2 = (arc4random()/(double)RAND_MAX - 0.5)*2;
+  double r3 = (arc4random()/(double)RAND_MAX - 0.5)*2;
+  double r4 = (arc4random()/(double)RAND_MAX - 0.5)*2;
   QVector<double> x(n), y(n);
   for (int i=0; i<n; i++)
   {
@@ -199,12 +199,12 @@ void MainWindow::addRandomGraph()
   ui->customPlot->addGraph();
   ui->customPlot->graph()->setName(QString("New graph %1").arg(ui->customPlot->graphCount()-1));
   ui->customPlot->graph()->setData(x, y);
-  ui->customPlot->graph()->setLineStyle((QCPGraph::LineStyle)(rand()%5+1));
-  if (rand()%100 > 50)
-    ui->customPlot->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(rand()%14+1)));
+  ui->customPlot->graph()->setLineStyle((QCPGraph::LineStyle)(arc4random()%5+1));
+  if (arc4random()%100 > 50)
+    ui->customPlot->graph()->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(arc4random()%14+1)));
   QPen graphPen;
-  graphPen.setColor(QColor(rand()%245+10, rand()%245+10, rand()%245+10));
-  graphPen.setWidthF(rand()/(double)RAND_MAX*2+1);
+  graphPen.setColor(QColor(arc4random()%245+10, arc4random()%245+10, arc4random()%245+10));
+  graphPen.setWidthF(arc4random()/(double)RAND_MAX*2+1);
   ui->customPlot->graph()->setPen(graphPen);
   ui->customPlot->replot();
 }
@@ -213,7 +213,7 @@ void MainWindow::removeSelectedGraph()
 {
   if (ui->customPlot->selectedGraphs().size() > 0)
   {
-    ui->customPlot->removeGraph(ui->customPlot->selectedGraphs().first());
+    ui->customPlot->removeGraph(ui->customPlot->selectedGraphs().at(0));
     ui->customPlot->replot();
   }
 }
