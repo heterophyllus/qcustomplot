@@ -2,9 +2,9 @@
 
 ## The Repository
 
-This is a fork of [QCustomPlot](https://www.qcustomplot.com) developed by Emanuel Eichhammer.
+This is a fork of [QCustomPlot](https://www.qcustomplot.com) originally developed by Emanuel Eichhammer.
 
-This project mainly modifies the codes to maintain the compatibility with later versions of Qt.
+This project just modifies the codes to maintain the compatibility with recent versions of Qt.
 
 ## QCustomPlot
 > QCustomPlot is a Qt C++ widget for plotting and data visualization. It has no further dependencies and is well documented. This plotting library focuses on making good looking, publication quality 2D plots, graphs and charts, as well as offering high performance for realtime visualization applications. 
