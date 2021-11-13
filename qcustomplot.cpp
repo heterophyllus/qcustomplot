@@ -15324,7 +15324,7 @@ void QCustomPlot::processRectSelection(QRect rect, QMouseEvent *event)
         if (!potentialSelections.isEmpty())
         {
           QMultiMap<int, QPair<QCPAbstractPlottable*, QCPDataSelection> >::iterator it = potentialSelections.begin();
-          QMultiMap<int, QPair<QCPAbstractPlottable*, QCPDataSelection> >::iterator it_before_last = potentialSelections.end(); it_before_last--;
+          QMultiMap<int, QPair<QCPAbstractPlottable*, QCPDataSelection> >::iterator it_before_last = potentialSelections.end(); --it_before_last;
           while (it != it_before_last) // erase all except last element
             it = potentialSelections.erase(it);
         }
@@ -16311,14 +16311,14 @@ void QCPColorGradient::updateColorBuffer()
       QMap<double, QColor>::const_iterator it = mColorStops.lowerBound(position);
       if (it == mColorStops.constEnd()) // position is on or after last stop, use color of last stop
       {
-          auto it_end_1 = it--;
+         auto it_1 = it; --it_1;
         if (useAlpha)
         {
-          const QColor col = it_end_1.value();
+          const QColor col = (it_1).value();
           const float alphaPremultiplier = col.alpha()/255.0f; // since we use QImage::Format_ARGB32_Premultiplied
           mColorBuffer[i] = qRgba(col.red()*alphaPremultiplier, col.green()*alphaPremultiplier, col.blue()*alphaPremultiplier, col.alpha());
         } else
-          mColorBuffer[i] = it_end_1.value().rgba();
+          mColorBuffer[i] = (it_1).value().rgba();
       } else if (it == mColorStops.constBegin()) // position is on or before first stop, use color of first stop
       {
         if (useAlpha)
@@ -16330,8 +16330,8 @@ void QCPColorGradient::updateColorBuffer()
           mColorBuffer[i] = it.value().rgba();
       } else // position is in between stops (or on an intermediate stop), interpolate color
       {
-        QMap<double, QColor>::const_iterator high = it;
-        QMap<double, QColor>::const_iterator low = it; it--; // low = it-1
+        QMap<double, QColor>::const_iterator high = it; auto it_1 = it; --it_1;
+        QMap<double, QColor>::const_iterator low = it_1; // low = it-1
         double t = (position-low.key())/(high.key()-low.key()); // interpolation factor 0..1
         switch (mColorInterpolation)
         {
