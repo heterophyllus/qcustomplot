@@ -5,7 +5,7 @@ project(QCustomPlot)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets PrintSupport REQUIRED)
+#find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets PrintSupport REQUIRED)
 find_package(Qt5 COMPONENTS Widgets PrintSupport REQUIRED)
 
 add_library(QCustomPlot STATIC
